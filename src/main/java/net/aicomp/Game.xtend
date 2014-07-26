@@ -72,6 +72,18 @@ class Game {
 		]
 	}
 	
+	def getRanking(){
+		val playersWithWinningPopularity=getPlayersWithTotalPopularity(true, true);
+		val playersWithLosingPopularity = getPlayersWithTotalPopularity(false, true);
+		
+		(0..getNumPlayers()-1).forEach[playerIndex|
+			playersWithWinningPopularity.get(playerIndex).integerPopularity -= playersWithLosingPopularity.get(playerIndex).integerPopularity
+		]
+		
+		playersWithWinningPopularity.sort()
+		return playersWithWinningPopularity 
+	}
+	
 	def getPlayersWithTotalPopularity(boolean winning,boolean real){
 		val players=(0..getNumPlayers()-1).map[playerIndex|
 			new Player(playerIndex,getNumPlayers())
@@ -79,13 +91,12 @@ class Game {
 		_heroines.forEach[heroine|
 			val func=if(winning)[Utility.max(it)] else [Utility.max(it)]
 			val targetPlayers=heroine.filterPlayersByLove(players, func, real);
-			targetPlayers.forEach[
-				
+			targetPlayers.forEach[targetPlayer|
+				targetPlayer.addPopularity(heroine.enthusiasm,targetPlayers.size())
 			]
-			
 		]
+		players
 	}
-	
 	
 	def getWinner(){
 		val ranking=getRanking()
@@ -172,6 +183,10 @@ class Heroine {
 
 	def getDatedBit() {
 		if(_dated) 1 else 0
+	}
+	
+	def getEnthusiasm(){
+		return _enthusiasm
 	}
 }
 

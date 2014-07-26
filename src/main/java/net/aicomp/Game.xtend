@@ -131,13 +131,19 @@ class Heroine {
 		val targetLove = func.apply(allLove)
 		val targetPlayers = new ArrayList<Player>()
 		for (player : players) {
+			if (allLove.get(player.getIndex()) == targetLove) {
+				targetPlayers.add(player)
+			}
 		}
+		targetPlayers
 	}
 
 	def refresh() {
 		_dated = false
 	}
 
+	def getDatedBit() {
+	}
 }
 
 class Utility {

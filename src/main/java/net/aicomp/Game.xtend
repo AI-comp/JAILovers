@@ -88,13 +88,79 @@ class Game {
 		_turn += 1
 	}
 
-	def getRanking() {
-		val playersWithWinningPopularity = getPlayersWithTotalPopularity(true, true);
-		val playersWithLosingPopularity = getPlayersWithTotalPopularity(false, true);
+	def isInitialState() {
+		_turn == _initialTurn
+	}
 
-		(0 .. getNumPlayers() - 1).forEach [ playerIndex |
-			playersWithWinningPopularity.get(playerIndex).integerPopularity -=
-				playersWithLosingPopularity.get(playerIndex).integerPopularity
+	def isFinished() {
+		_turn > _lastTurn
+	}
+
+	def getInitialInformation() {
+		#[
+			#[_lastTurn - _initialTurn + 1, _numPlayers, _heroines.length].join(' '),
+			_heroines.map[it.enthusiasm].join(' ')
+		].join('\n') + '\n'
+	}
+
+	def getTurnInformation(int playerIndex) {
+		val lines = Lists.newArrayList(
+			#[_turn, if(isWeekday) 'W' else 'H'].join(' ')
+		)
+
+		lines.addAll(
+			_heroines.map [ heroine |
+				val enemyIndices = (0 ..< _numPlayers).filter [
+					it != playerIndex
+				]
+				val enemyLove = enemyIndices.map [
+					heroine.revealedLove.get(it)
+				]
+				(enemyIndices + enemyLove).join(' ')
+			])
+
+		lines.add(_heroines.map[it.realLove.get(playerIndex)].join(' '))
+
+		if (isWeekday) {
+			lines.add(_heroines.map[it.getDatedBit()].join(' '))
+		}
+
+		lines.join('\n') + '\n'
+	}
+
+	def getStatus() {
+		val lines = #[
+			'Enthusiasm:',
+			_heroines.map[it.enthusiasm].join(' '),
+			'Real Love:'
+		]
+		lines.addAll(_heroines.map[it.realLove.join(' ')])
+
+		if (isWeekday) {
+			lines.add('Dated:')
+			lines.add(_heroines.map[it.getDatedBit()].join(' '))
+		}
+
+		lines.add('Ranking:')
+		lines.addAll(
+			ranking.map [
+				'Player ' + it.index + ': ' + it.getPopularity() + ' popularity'
+			])
+
+		return lines.join('\n') + '\n'
+	}
+
+	def getTerminationText(int playerIndex) {
+		return null
+	}
+
+	def getRanking() {
+		val playersWithWinningPopularity = getPlayersWithTotalPopularity(true, true)
+		val playersWithLosingPopularity = getPlayersWithTotalPopularity(false, true)
+
+		(0 .. getNumPlayers() - 1).forEach [ 
+			playersWithWinningPopularity.get(it).integerPopularity -=
+				playersWithLosingPopularity.get(it).integerPopularity
 		]
 
 		playersWithWinningPopularity.sort()
@@ -107,7 +173,7 @@ class Game {
 		]
 		_heroines.forEach [ heroine |
 			val func = if(winning) [Utility.max(it)] else [Utility.max(it)]
-			val targetPlayers = heroine.filterPlayersByLove(players, func, real);
+			val targetPlayers = heroine.filterPlayersByLove(players, func, real)
 			targetPlayers.forEach [ targetPlayer |
 				targetPlayer.addPopularity(heroine.enthusiasm, targetPlayers.size())
 			]
@@ -180,6 +246,14 @@ class Heroine {
 
 	def refresh() {
 		_dated = false
+	}
+
+	def getRevealedLove() {
+		_revealedLove
+	}
+
+	def getRealLove() {
+		_realLove
 	}
 
 	def getDatedBit() {

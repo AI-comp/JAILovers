@@ -72,8 +72,9 @@ class Main {
 		if (externalCmds.length != workingDirs.length) {
 			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
 		}
-		workingDirs += (0 .. 3).map[null]
-		val workingDirsItr = workingDirs.iterator()
+		val s = (workingDirs + (0 .. 3).map[null]).toList()
+		val a = s
+		val workingDirsItr = (workingDirs + (0 .. 3).map[null]).toList().iterator()
 		val ais = (externalCmds + (0 .. 3).drop(externalCmds.length).map[defaultCommand]).map [ cmd |
 			new AIManipulator(cmd.split(" "), workingDirsItr.next)
 		]

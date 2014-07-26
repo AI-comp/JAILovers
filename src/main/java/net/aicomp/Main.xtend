@@ -1,5 +1,6 @@
 package net.aicomp
 
+import java.util.List
 import net.exkazuu.gameaiarena.manipulator.Manipulator
 import net.exkazuu.gameaiarena.player.ExternalComputerPlayer
 import org.apache.commons.cli.BasicParser
@@ -11,15 +12,12 @@ import org.apache.commons.cli.ParseException
 
 class Main {
 	static val HELP = "h"
-	static val FPS = "f"
-	static val CUI_MODE = "c"
 	static val RESULT_MODE = "r"
-	static val REPLAY_MODE = "p"
 	static val SILENT = "s"
-	static val LIGHT_GUI_MODE = "l"
 	static val EXTERNAL_AI_PROGRAM = "a"
 	static val WORK_DIR_AI_PROGRAM = "w"
 	static val NOT_SHOWING_LOG = "n"
+	static val DEFAULT_COMMAND = "echo SampleAI"
 
 	static def buildOptions() {
 		OptionBuilder.hasArgs()
@@ -30,13 +28,10 @@ class Main {
 		OptionBuilder.withDescription("Set working directories for external programs.")
 		val workDirOption = OptionBuilder.create(WORK_DIR_AI_PROGRAM)
 
-		val options = new Options().addOption(HELP, false, "Print this help.").addOption(FPS, false, "Enable CUI mode.").
-			addOption(CUI_MODE, false, "Enable CUI mode.").addOption(RESULT_MODE, false,
-				"Enable result mode which show only a screen of a result.").addOption(REPLAY_MODE, true,
-				"Replay the specified .rep file.").addOption(LIGHT_GUI_MODE, false,
-				"Enable light and fast GUI mode by reducing rendering frequency.").addOption(NOT_SHOWING_LOG, false,
-				"Disable showing logs in the screen.").addOption(SILENT, false,
-				"Disable writing log files in the log directory.").addOption(externalAIOption).addOption(workDirOption)
+		val options = new Options().addOption(HELP, false, "Print this help.").addOption(RESULT_MODE, false,
+			"Enable result mode which show only a screen of a result.").addOption(NOT_SHOWING_LOG, false,
+			"Disable showing logs in the screen.").addOption(SILENT, false,
+			"Disable writing log files in the log directory.").addOption(externalAIOption).addOption(workDirOption)
 		options
 	}
 
@@ -63,7 +58,6 @@ class Main {
 	}
 
 	static def start(CommandLine cl) {
-		val defaultCommand = "java SampleAI"
 		val externalCmds = getOptionsValuesWithoutNull(cl, EXTERNAL_AI_PROGRAM)
 		var workingDirs = getOptionsValuesWithoutNull(cl, WORK_DIR_AI_PROGRAM)
 		if (workingDirs.isEmpty) {
@@ -72,13 +66,21 @@ class Main {
 		if (externalCmds.length != workingDirs.length) {
 			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
 		}
-		workingDirs += (0 .. 3).map[null]
-		val workingDirsItr = workingDirs.iterator()
-		val ais = (externalCmds + (0 .. 3).drop(externalCmds.length).map[defaultCommand]).map [ cmd |
+		val workingDirsItr = (workingDirs + (0 .. 3).map[null]).toList().iterator()
+		val ais = (externalCmds + (0 .. 3).drop(externalCmds.length).map[Main.DEFAULT_COMMAND]).map [ cmd |
 			new AIManipulator(cmd.split(" "), workingDirsItr.next)
-		]
+		].toList()
+		game(ais)
+	}
 
-	// do something
+	static def game(List<AIManipulator> ais) {
+		(1 .. 100).forEach [
+			System.out.print(it + ": ")
+			ais.forEach [ ai, i |
+				ai.run(new Game())
+			]
+			System.out.println()
+		]
 	}
 
 	static def String[] getOptionsValuesWithoutNull(CommandLine cl, String option) {
@@ -115,10 +117,11 @@ class AIManipulator extends GameManipulator {
 		val line = _com.readLine
 
 		// do something
-		_result = #[]
+		_result = #[line]
 	}
 
 	override protected runPostProcessing() {
+		System.out.println(_result.join(","))
 		_result
 	}
 }

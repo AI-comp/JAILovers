@@ -70,6 +70,7 @@ class Game {
 		_heroines.forEach [ heroine |
 			heroine.refresh()
 		]
+		
 	}
 }
 

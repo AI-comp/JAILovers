@@ -3,11 +3,11 @@ package net.aicomp
 import net.exkazuu.gameaiarena.manipulator.Manipulator
 import net.exkazuu.gameaiarena.player.ExternalComputerPlayer
 import org.apache.commons.cli.BasicParser
+import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.OptionBuilder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
-import org.apache.commons.cli.CommandLine
 
 class Main {
 	static val HELP = "h"
@@ -45,24 +45,6 @@ class Main {
 		help.printHelp("java -jar JAILovers.jar [OPTIONS]\n" + "[OPTIONS]: ", "", options, "", true)
 	}
 
-	static def String[] getOptionsValuesWithoutNull(CommandLine cl, String option) {
-		if (cl.hasOption(option))
-			cl.getOptionValues(option)
-		else
-			#[]
-	}
-
-	static def start(CommandLine cl) {
-		val externalCmds = getOptionsValuesWithoutNull(cl, EXTERNAL_AI_PROGRAM)
-		var workingDirs = getOptionsValuesWithoutNull(cl, WORK_DIR_AI_PROGRAM)
-		if (workingDirs.isEmpty) {
-			workingDirs = externalCmds.map[null]
-		}
-		if (externalCmds.length != workingDirs.length) {
-			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
-		}
-	}
-
 	static def void main(String[] args) {
 		val options = buildOptions()
 		try {
@@ -71,20 +53,39 @@ class Main {
 			if (cl.hasOption(HELP)) {
 				printHelp(options)
 			} else {
-				val ais = #[
-					new AIPlayerGameManipulator(#["java", "SampleAI"]),
-					new AIPlayerGameManipulator(#["java", "SampleAI"]),
-					new AIPlayerGameManipulator(#["java", "SampleAI"]),
-					new AIPlayerGameManipulator(#["java", "SampleAI"])
-				].map[it.limittingTime(1000)]
-
-			// do a game
+				start(cl)
 			}
 		} catch (ParseException e) {
 			System.err.println("Error: " + e.getMessage())
 			printHelp(options)
 			System.exit(-1)
 		}
+	}
+
+	static def start(CommandLine cl) {
+		val defaultCommand = "java SampleAI"
+		val externalCmds = getOptionsValuesWithoutNull(cl, EXTERNAL_AI_PROGRAM)
+		var workingDirs = getOptionsValuesWithoutNull(cl, WORK_DIR_AI_PROGRAM)
+		if (workingDirs.isEmpty) {
+			workingDirs = externalCmds.map[null]
+		}
+		if (externalCmds.length != workingDirs.length) {
+			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
+		}
+		workingDirs += (0 .. 3).map[null]
+		val workingDirsItr = workingDirs.iterator()
+		val ais = (externalCmds + (0 .. 3).drop(externalCmds.length).map[defaultCommand]).map [ cmd |
+			new AIManipulator(cmd.split(" "), workingDirsItr.next)
+		]
+
+	// do something
+	}
+
+	static def String[] getOptionsValuesWithoutNull(CommandLine cl, String option) {
+		if (cl.hasOption(option))
+			cl.getOptionValues(option)
+		else
+			#[]
 	}
 }
 
@@ -96,7 +97,7 @@ class Game {
 abstract class GameManipulator extends Manipulator<Game, String[]> {
 }
 
-class AIPlayerGameManipulator extends GameManipulator {
+class AIManipulator extends GameManipulator {
 	private ExternalComputerPlayer _com
 	private Game _game
 	private String[] _result

@@ -89,9 +89,6 @@ class Main {
 	}
 }
 
-class Game {
-}
-
 // Generics parameters <Game, String[]> indicate runPreProcessing receives Game object
 // and runProcessing and runPostProcessing returns String[] object
 abstract class GameManipulator extends Manipulator<Game, String[]> {

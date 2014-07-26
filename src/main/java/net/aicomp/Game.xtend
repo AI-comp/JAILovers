@@ -6,6 +6,7 @@ import java.util.Random
 
 import static extension net.aicomp.Utility.*
 import java.util.List
+import java.util.Collections
 
 class Game {
 	private ArrayList<Heroine> _heroines
@@ -42,7 +43,7 @@ class Game {
 	def populateHeroines(int numHeroines) {
 		_heroines = new ArrayList<Heroine>()
 		(0 .. numHeroines).forEach [ i |
-			val enthusiasm = Math.floor(_random.nextInt * 4) + 3 as int
+			val enthusiasm = (Math.floor(_random.nextInt * 4) + 3 )as int
 			_heroines.add(new Heroine(enthusiasm, _numPlayers))
 		]
 	}
@@ -87,43 +88,44 @@ class Game {
 		]
 		_turn += 1
 	}
-	
-	def getRanking(){
-		val playersWithWinningPopularity=getPlayersWithTotalPopularity(true, true);
+
+	def getRanking() {
+		val playersWithWinningPopularity = getPlayersWithTotalPopularity(true, true);
 		val playersWithLosingPopularity = getPlayersWithTotalPopularity(false, true);
-		
-		(0..getNumPlayers()-1).forEach[playerIndex|
-			playersWithWinningPopularity.get(playerIndex).integerPopularity -= playersWithLosingPopularity.get(playerIndex).integerPopularity
+
+		(0 .. getNumPlayers() - 1).forEach [ playerIndex |
+			playersWithWinningPopularity.get(playerIndex).decreaseIntegerPopularity(
+				playersWithLosingPopularity.get(playerIndex).integerPopularity)
 		]
-		
-		playersWithWinningPopularity.sort()
-		return playersWithWinningPopularity 
+
+		Collections.sort(playersWithWinningPopularity)
+		return playersWithWinningPopularity
 	}
-	
-	def getPlayersWithTotalPopularity(boolean winning,boolean real){
-		val players=(0..getNumPlayers()-1).map[playerIndex|
-			new Player(playerIndex,getNumPlayers())
-		]
-		_heroines.forEach[heroine|
-			val func=if(winning)[Utility.max(it)] else [Utility.max(it)]
-			val targetPlayers=heroine.filterPlayersByLove(players, func, real);
-			targetPlayers.forEach[targetPlayer|
-				targetPlayer.addPopularity(heroine.enthusiasm,targetPlayers.size())
+
+	def getPlayersWithTotalPopularity(boolean winning, boolean real) {
+		val players = (0 .. getNumPlayers() - 1).map [ playerIndex |
+			new Player(playerIndex, getNumPlayers())
+		].toList()
+		_heroines.forEach [ heroine |
+			val func = if(winning) [Utility.max(it)] else [Utility.max(it)]
+			val targetPlayers = heroine.filterPlayersByLove(players, func, real);
+			targetPlayers.forEach [ targetPlayer |
+				targetPlayer.addPopularity(heroine.enthusiasm, targetPlayers.size())
 			]
 		]
 		players
 	}
-	
-	def getWinner(){
-		val ranking=getRanking()
-		if(ranking.get(0).getPopularity()==ranking.get(1).getPopularity()){
+
+	def getWinner() {
+		val ranking = getRanking()
+		if (ranking.get(0).getPopularity() == ranking.get(1).getPopularity()) {
 			''
-		}else{
+		} else {
 			ranking.get(0).index
 		}
 	}
-	
-	def getReplay(){
+
+	def getReplay() {
 		_replay
 	}
 }
@@ -151,13 +153,13 @@ class Commands {
 }
 
 class Heroine {
-	private double _enthusiasm
+	private int _enthusiasm
 	private int _numPlayers
 	private ArrayList<Integer> _revealedLove
 	private ArrayList<Integer> _realLove
 	private boolean _dated
 
-	new(double enthusiasm, int numPlayers) {
+	new(int enthusiasm, int numPlayers) {
 		_enthusiasm = enthusiasm
 		_numPlayers = numPlayers
 		_revealedLove = new ArrayList<Integer>()
@@ -179,7 +181,7 @@ class Heroine {
 		_dated = true
 	}
 
-	def filterPlayersByLove(Iterable<Player> players, Function<ArrayList<Integer>, Integer> func, boolean real) {
+	def filterPlayersByLove(ArrayList<Player> players, Function<ArrayList<Integer>, Integer> func, boolean real) {
 		val allLove = if(real) _realLove else _revealedLove
 		val targetLove = func.apply(allLove)
 		val targetPlayers = new ArrayList<Player>()
@@ -198,8 +200,8 @@ class Heroine {
 	def getDatedBit() {
 		if(_dated) 1 else 0
 	}
-	
-	def getEnthusiasm(){
+
+	def getEnthusiasm() {
 		return _enthusiasm
 	}
 }

@@ -70,7 +70,34 @@ class Game {
 		_heroines.forEach [ heroine |
 			heroine.refresh()
 		]
-		
+	}
+	
+	def getPlayersWithTotalPopularity(boolean winning,boolean real){
+		val players=(0..getNumPlayers()-1).map[playerIndex|
+			new Player(playerIndex,getNumPlayers())
+		]
+		_heroines.forEach[heroine|
+			val func=if(winning)[Utility.max(it)] else [Utility.max(it)]
+			val targetPlayers=heroine.filterPlayersByLove(players, func, real);
+			targetPlayers.forEach[
+				
+			]
+			
+		]
+	}
+	
+	
+	def getWinner(){
+		val ranking=getRanking()
+		if(ranking.get(0).getPopularity()==ranking.get(1).getPopularity()){
+			''
+		}else{
+			ranking.get(0).index
+		}
+	}
+	
+	def getReplay(){
+		_replay
 	}
 }
 
@@ -127,7 +154,7 @@ class Heroine {
 		_dated = true
 	}
 
-	def filterPlayersByLove(ArrayList<Player> players, Function<ArrayList<Integer>, Integer> func, boolean real) {
+	def filterPlayersByLove(Iterable<Player> players, Function<ArrayList<Integer>, Integer> func, boolean real) {
 		val allLove = if(real) _realLove else _revealedLove
 		val targetLove = func.apply(allLove)
 		val targetPlayers = new ArrayList<Player>()

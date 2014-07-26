@@ -87,6 +87,10 @@ class Game {
 		_turn += 1
 	}
 
+	def getTerminationText(int playerIndex) {
+		''
+	}
+
 	def getRanking() {
 		val playersWithWinningPopularity = getPlayersWithTotalPopularity(true, true);
 		val playersWithLosingPopularity = getPlayersWithTotalPopularity(false, true);

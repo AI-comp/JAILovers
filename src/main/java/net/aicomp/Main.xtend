@@ -7,44 +7,28 @@ import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.OptionBuilder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
+import org.apache.commons.cli.CommandLine
 
 class Main {
-	val HELP = "h"
-	val FPS = "f"
-	val CUI_MODE = "c"
-	val RESULT_MODE = "r"
-	val REPLAY_MODE = "p"
-	val SILENT = "s"
-	val USER_PLAYERS = "u"
-	val LIGHT_GUI_MODE = "l"
-	val EXTERNAL_AI_PROGRAM = "a"
-	val WORK_DIR_AI_PROGRAM = "w"
-	val INTERNAL_AI_PROGRAM = "i"
-	val NOT_SHOWING_LOG = "n"
+	static val HELP = "h"
+	static val FPS = "f"
+	static val CUI_MODE = "c"
+	static val RESULT_MODE = "r"
+	static val REPLAY_MODE = "p"
+	static val SILENT = "s"
+	static val LIGHT_GUI_MODE = "l"
+	static val EXTERNAL_AI_PROGRAM = "a"
+	static val WORK_DIR_AI_PROGRAM = "w"
+	static val NOT_SHOWING_LOG = "n"
 
-	def buildOptions() {
-		OptionBuilder.hasArg()
-		OptionBuilder.withDescription(
-			"Set 0-3 user players. When specifying no player option (-u, -a, -i), a game is provided for 1 user player and 2 default internal AI players")
-		val userOption = OptionBuilder.create(USER_PLAYERS)
-
+	static def buildOptions() {
 		OptionBuilder.hasArgs()
-		OptionBuilder.withDescription("Set 1-3 AI players with external programs.")
+		OptionBuilder.withDescription("Set 1-4 AI players with external programs.")
 		val externalAIOption = OptionBuilder.create(EXTERNAL_AI_PROGRAM)
 
 		OptionBuilder.hasArgs()
 		OptionBuilder.withDescription("Set working directories for external programs.")
 		val workDirOption = OptionBuilder.create(WORK_DIR_AI_PROGRAM)
-
-		OptionBuilder.hasArgs()
-		OptionBuilder.withDescription("Set 1-3 AI players with internal classes for debugging puropose.")
-		val internalAIOption = OptionBuilder.create(INTERNAL_AI_PROGRAM)
-
-		OptionBuilder.withDescription(
-			"FPS to adjust game speed. Default value is 30 for user mode or 1000 for ai mode.")
-		OptionBuilder.hasArg()
-		OptionBuilder.withArgName("fps")
-		val fpsOption = OptionBuilder.create(FPS)
 
 		val options = new Options().addOption(HELP, false, "Print this help.").addOption(FPS, false, "Enable CUI mode.").
 			addOption(CUI_MODE, false, "Enable CUI mode.").addOption(RESULT_MODE, false,
@@ -52,17 +36,34 @@ class Main {
 				"Replay the specified .rep file.").addOption(LIGHT_GUI_MODE, false,
 				"Enable light and fast GUI mode by reducing rendering frequency.").addOption(NOT_SHOWING_LOG, false,
 				"Disable showing logs in the screen.").addOption(SILENT, false,
-				"Disable writing log files in the log directory.").addOption(userOption).addOption(externalAIOption).
-			addOption(workDirOption).addOption(internalAIOption).addOption(fpsOption)
+				"Disable writing log files in the log directory.").addOption(externalAIOption).addOption(workDirOption)
 		options
 	}
 
-	def printHelp(Options options) {
+	static def printHelp(Options options) {
 		val help = new HelpFormatter()
-		help.printHelp("java -jar Terraforming.jar [OPTIONS]\n" + "[OPTIONS]: ", "", options, "", true)
+		help.printHelp("java -jar JAILovers.jar [OPTIONS]\n" + "[OPTIONS]: ", "", options, "", true)
 	}
 
-	def void main(String[] args) {
+	static def String[] getOptionsValuesWithoutNull(CommandLine cl, String option) {
+		if (cl.hasOption(option))
+			cl.getOptionValues(option)
+		else
+			#[]
+	}
+
+	static def start(CommandLine cl) {
+		val externalCmds = getOptionsValuesWithoutNull(cl, EXTERNAL_AI_PROGRAM)
+		var workingDirs = getOptionsValuesWithoutNull(cl, WORK_DIR_AI_PROGRAM)
+		if (workingDirs.isEmpty) {
+			workingDirs = externalCmds.map[null]
+		}
+		if (externalCmds.length != workingDirs.length) {
+			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
+		}
+	}
+
+	static def void main(String[] args) {
 		val options = buildOptions()
 		try {
 			val parser = new BasicParser()
@@ -70,12 +71,14 @@ class Main {
 			if (cl.hasOption(HELP)) {
 				printHelp(options)
 			} else {
-				val ais = #[new AIPlayerGameManipulator(#["java", "SampleAI"]),
+				val ais = #[
+					new AIPlayerGameManipulator(#["java", "SampleAI"]),
 					new AIPlayerGameManipulator(#["java", "SampleAI"]),
 					new AIPlayerGameManipulator(#["java", "SampleAI"]),
 					new AIPlayerGameManipulator(#["java", "SampleAI"])
 				].map[it.limittingTime(1000)]
-				// do a game
+
+			// do a game
 			}
 		} catch (ParseException e) {
 			System.err.println("Error: " + e.getMessage())
@@ -112,6 +115,7 @@ class AIPlayerGameManipulator extends GameManipulator {
 
 	override protected runProcessing() {
 		val line = _com.readLine
+
 		// do something
 		_result = #[]
 	}

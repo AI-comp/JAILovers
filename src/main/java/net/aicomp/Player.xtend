@@ -10,6 +10,10 @@ class Player {
 		_integerPopularity = 0
 		_multiplier = factorial(numPlayers)
 	}
+	
+	def getIndex() {
+		_index
+	}
 
 	def compareTo(Player other) {
 		if(_integerPopularity > other._integerPopularity) 1 else -1

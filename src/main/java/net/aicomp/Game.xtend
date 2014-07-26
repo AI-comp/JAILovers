@@ -1,10 +1,11 @@
 package net.aicomp
 
+import com.google.common.base.Function
 import java.util.ArrayList
 import java.util.Random
 
 import static extension net.aicomp.Utility.*
-import com.google.common.base.Function
+import java.util.List
 
 class Game {
 	private ArrayList<Heroine> _heroines
@@ -66,10 +67,25 @@ class Game {
 		_lastTurn - _initialTurn
 	}
 
-	def processTurn(Commands commands) {
+	def processTurn(List<List<String>> commands) {
 		_heroines.forEach [ heroine |
 			heroine.refresh()
 		]
+
+		_replay.allCommands.add((1 .. _numPlayers).map[#[]].toList)
+		(1 .. _numPlayers).forEach [ playerIndex |
+			(1 .. numRequiredCommands).forEach [ i |
+				var parsedCommand = try {
+					Integer.parseInt(commands.get(playerIndex, i))
+				} catch (Exception e) {
+					0
+				}
+				val targetHeroineIndex = Math.max(Math.min(parsedCommand, _heroines.length), 0)
+				_heroines.get(targetHeroineIndex).date(playerIndex, isWeekday)
+				_replay.allCommands.get(_turn - 1, playerIndex).add(targetHeroineIndex)
+			]
+		]
+		_turn += 1
 	}
 	
 	def getRanking(){
@@ -113,35 +129,33 @@ class Game {
 }
 
 class Replay {
-	int _seed
-	Commands _commands
+	private int _seed
+	private List<List<List<Integer>>> _allCommands
 
 	new(int seed) {
 		_seed = seed
 	}
+
+	def getAllCommands() {
+		_allCommands
+	}
 }
 
 class Commands {
-	ArrayList<ArrayList<Integer>> _commands
+	private ArrayList<ArrayList<Integer>> _commands
 
 	new() {
 		_commands = new ArrayList<ArrayList<Integer>>()
 	}
 
-	def get(int turn, int index) {
-		_commands.get(turn).get(index)
-	}
-}
-
-class Player {
 }
 
 class Heroine {
-	double _enthusiasm
-	int _numPlayers
-	ArrayList<Integer> _revealedLove
-	ArrayList<Integer> _realLove
-	boolean _dated
+	private double _enthusiasm
+	private int _numPlayers
+	private ArrayList<Integer> _revealedLove
+	private ArrayList<Integer> _realLove
+	private boolean _dated
 
 	new(double enthusiasm, int numPlayers) {
 		_enthusiasm = enthusiasm
@@ -170,7 +184,7 @@ class Heroine {
 		val targetLove = func.apply(allLove)
 		val targetPlayers = new ArrayList<Player>()
 		for (player : players) {
-			if (allLove.get(player.getIndex()) == targetLove) {
+			if (allLove.get(player.index) == targetLove) {
 				targetPlayers.add(player)
 			}
 		}
@@ -209,5 +223,9 @@ class Utility {
 			ret = Math.min(ret, value)
 		}
 		ret
+	}
+
+	static def <T> get(List<List<T>> arrays, int firstIndex, int secondIndex) {
+		arrays.get(firstIndex).get(secondIndex)
 	}
 }

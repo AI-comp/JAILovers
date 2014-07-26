@@ -143,6 +143,7 @@ class Heroine {
 	}
 
 	def getDatedBit() {
+		if(_dated) 1 else 0
 	}
 }
 

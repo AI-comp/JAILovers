@@ -9,6 +9,7 @@ import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.OptionBuilder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
+import java.util.ArrayList
 
 class Main {
 	static val HELP = "h"
@@ -17,7 +18,7 @@ class Main {
 	static val EXTERNAL_AI_PROGRAM = "a"
 	static val WORK_DIR_AI_PROGRAM = "w"
 	static val NOT_SHOWING_LOG = "n"
-	static val DEFAULT_COMMAND = "echo SampleAI"
+	static val DEFAULT_COMMAND = "python SampleAI.py"
 
 	static def buildOptions() {
 		OptionBuilder.hasArgs()
@@ -67,20 +68,32 @@ class Main {
 			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
 		}
 		val workingDirsItr = (workingDirs + (0 .. 3).map[null]).toList().iterator()
-		val ais = (externalCmds + (0 .. 3).drop(externalCmds.length).map[Main.DEFAULT_COMMAND]).map [ cmd |
-			new AIManipulator(cmd.split(" "), workingDirsItr.next)
-		].toList()
-		game(ais)
+		val cmds = (externalCmds + (0 .. 3).drop(externalCmds.length).map[Main.DEFAULT_COMMAND])
+		val ais = new ArrayList<AIManipulator>()
+		cmds.forEach [ cmd, i |
+			ais.add(new AIManipulator(i, cmd.split(" "), workingDirsItr.next))
+		]
+		playGame(ais)
 	}
 
-	static def game(List<AIManipulator> ais) {
-		(1 .. 100).forEach [
-			System.out.print(it + ": ")
-			ais.forEach [ ai, i |
-				ai.run(new Game())
-			]
-			System.out.println()
+	static def playGame(List<AIManipulator> ais) {
+		val game = new Game()
+		game.initialize()
+
+		ais.forEach [ ai |
+			ai.getReady()
 		]
+
+		while (!game.isFinished()) {
+			System.out.println("Starting a new turn")
+			val commands = new ArrayList<List<String>>()
+			ais.forEach [ ai, index |
+				commands.add(ai.run(game).toList)
+			]
+			game.processTurn(commands)
+		}
+
+		System.out.println("Winner: " + game.winner)
 	}
 
 	static def String[] getOptionsValuesWithoutNull(CommandLine cl, String option) {
@@ -91,37 +104,53 @@ class Main {
 	}
 }
 
-// Generics parameters <Game, String[]> indicate runPreProcessing receives Game object
+// Generics parameters <Argument, String[]> indicate runPreProcessing receives Argument object
 // and runProcessing and runPostProcessing returns String[] object
 abstract class GameManipulator extends Manipulator<Game, String[]> {
 }
 
 class AIManipulator extends GameManipulator {
 	private ExternalComputerPlayer _com
-	private Game _game
-	private String[] _result
+	private String[] _commands
+	private int _index
 
-	new(String[] commandWithArguments) {
+	new(int index, String[] commandWithArguments) {
+		_index = index
 		_com = new ExternalComputerPlayer(commandWithArguments)
 	}
 
-	new(String[] commandWithArguments, String workingDir) {
+	new(int index, String[] commandWithArguments, String workingDir) {
+		_index = index
 		_com = new ExternalComputerPlayer(commandWithArguments, workingDir)
 	}
 
 	override protected runPreProcessing(Game game) {
-		_game = game
+		System.out.println("AI" + _index + ">>Writing to stdin, waiting for stdout")
+		var input = ""
+		if (game.isInitialState()) {
+			input += game.getInitialInformation()
+		}
+		input += game.getTurnInformation(_index)
+
+		System.out.println(input)
+		_com.writeLine(input)
 	}
 
 	override protected runProcessing() {
 		val line = _com.readLine
-
-		// do something
-		_result = #[line]
+		System.out.println("AI" + _index + ">>STDOUT:" + line)
+		_commands = line.trim().split(" ")
 	}
 
 	override protected runPostProcessing() {
-		System.out.println(_result.join(","))
-		_result
+		_commands
+	}
+
+	def getReady() {
+		var line = ""
+		do {
+			line = _com.readLine
+			System.out.println("AI" + _index + ">>STDOUT:" + line)
+		} while (line.toLowerCase != "ready")
 	}
 }

@@ -73,9 +73,12 @@ class Game {
 	def processTurn(List<List<String>> commands) {
 		_heroines.forEach[it.refresh()]
 
-		_replay.allCommands.add((1 .. _numPlayers).map[#[]].toList)
-		(1 .. _numPlayers).forEach [ playerIndex |
-			(1 .. numRequiredCommands).forEach [
+		_replay.allCommands.add(
+			(0 ..< _numPlayers).map [
+				Lists.newArrayList().toList
+			].toList)
+		(0 ..< _numPlayers).forEach [ playerIndex |
+			(0 ..< numRequiredCommands).forEach [
 				var parsedCommand = try {
 					Integer.parseInt(commands.get(playerIndex, it))
 				} catch (Exception e) {

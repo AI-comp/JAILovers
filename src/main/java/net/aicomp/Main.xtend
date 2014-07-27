@@ -39,7 +39,7 @@ class Main {
 
 	static def printHelp(Options options) {
 		val help = new HelpFormatter()
-		help.printHelp("java -jar JAILovers.jar [OPTIONS]\n" + "[OPTIONS]: ", "", options, "", true)
+		help.printHelp("java -jar AILovers.jar [OPTIONS]\n" + "[OPTIONS]: ", "", options, "", true)
 	}
 
 	static def void main(String[] args) {

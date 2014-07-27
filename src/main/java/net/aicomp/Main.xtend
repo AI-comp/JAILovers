@@ -11,6 +11,8 @@ import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.OptionBuilder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
+import java.io.OutputStream
+import java.io.IOException
 
 class Main {
 	static val HELP = "h"
@@ -83,7 +85,7 @@ class Main {
 		val workingDirsItr = (workingDirs + indices.map[Main.DEFAULT_WORK_DIR]).iterator
 		val indicesItr = indices.iterator
 		val ais = cmds.map [
-			val com = new ExternalComputerPlayer(it.split(" "), workingDirsItr.next)
+			val com = new ExternalComputerPlayerWithErrorLog(it.split(" "), workingDirsItr.next)
 			val index = indicesItr.next
 			new AIInitializer(com, index, logLevel, silent).limittingSumTime(1, 5000) ->
 				new AIManipulator(com, index, logLevel, silent).limittingSumTime(1, 1000)
@@ -145,10 +147,10 @@ abstract class GameManipulator extends Manipulator<Game, String[]> {
 }
 
 class AIInitializer extends GameManipulator {
-	val ExternalComputerPlayer _com
+	val ExternalComputerPlayerWithErrorLog _com
 	var List<String> _lines
 
-	new(ExternalComputerPlayer com, int index, int logLevel, boolean silent) {
+	new(ExternalComputerPlayerWithErrorLog com, int index, int logLevel, boolean silent) {
 		super(index, logLevel, silent)
 		_com = com
 	}
@@ -169,6 +171,9 @@ class AIInitializer extends GameManipulator {
 	}
 
 	override protected runPostProcessing() {
+		if (!_com.errorLog.isEmpty) {
+			Utility.outputLog("AI" + _index + ">>STDERR: " + _com.errorLog, Utility.LOG_LEVEL_DETAILS, _logLevel)
+		}
 		_lines.forEach [
 			Utility.outputLog("AI" + _index + ">>STDOUT: " + it, Utility.LOG_LEVEL_DETAILS, _logLevel)
 		]
@@ -177,10 +182,10 @@ class AIInitializer extends GameManipulator {
 }
 
 class AIManipulator extends GameManipulator {
-	val ExternalComputerPlayer _com
+	val ExternalComputerPlayerWithErrorLog _com
 	var String _line
 
-	new(ExternalComputerPlayer com, int index, int logLevel, boolean silent) {
+	new(ExternalComputerPlayerWithErrorLog com, int index, int logLevel, boolean silent) {
 		super(index, logLevel, silent)
 		_com = com
 	}
@@ -203,7 +208,10 @@ class AIManipulator extends GameManipulator {
 	}
 
 	override protected runPostProcessing() {
-		Utility.outputLog("AI" + _index + ">>STDOUT:" + _line, Utility.LOG_LEVEL_DETAILS, _logLevel)
+		if (!_com.errorLog.isEmpty) {
+			Utility.outputLog("AI" + _index + ">>STDERR: " + _com.errorLog, Utility.LOG_LEVEL_DETAILS, _logLevel)
+		}
+		Utility.outputLog("AI" + _index + ">>STDOUT: " + _line, Utility.LOG_LEVEL_DETAILS, _logLevel)
 		if (!Strings.isNullOrEmpty(_line)) {
 			_line.trim().split(" ")
 		} else {

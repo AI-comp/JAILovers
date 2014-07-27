@@ -77,14 +77,17 @@ class Game {
 			(0 ..< _numPlayers).map [
 				Lists.newArrayList().toList
 			].toList)
+			
 		(0 ..< _numPlayers).forEach [ playerIndex |
 			(0 ..< numRequiredCommands).forEach [
-				var parsedCommand = try {
+				var targetHeroineIndex = try {
 					Integer.parseInt(commands.get(playerIndex, it))
 				} catch (Exception e) {
 					0
 				}
-				val targetHeroineIndex = Math.max(Math.min(parsedCommand, _heroines.size), 0)
+				if (!(targetHeroineIndex >= 0 && targetHeroineIndex < _heroines.size)) {
+					targetHeroineIndex = 0
+				}
 				_heroines.get(targetHeroineIndex).date(playerIndex, isWeekday)
 				_replay.allCommands.get(_turn - 1, playerIndex).add(targetHeroineIndex)
 			]

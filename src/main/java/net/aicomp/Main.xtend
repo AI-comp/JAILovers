@@ -75,8 +75,8 @@ class Main {
 		val ais = cmds.map [
 			val com = new ExternalComputerPlayer(it.split(" "), workingDirsItr.next)
 			val index = indicesItr.next
-			new AIInitializer(index, com).limittingSumTime(5000, 0) ->
-				new AIManipulator(index, com).limittingSumTime(1000, 0)
+			new AIInitializer(index, com).limittingSumTime(0, 5000) ->
+				new AIManipulator(index, com).limittingSumTime(0, 1000)
 		].toList
 
 		playGame(ais)

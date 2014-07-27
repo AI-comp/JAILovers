@@ -1,6 +1,6 @@
 package net.aicomp
 
-class Player {
+class Player implements Comparable<Player> {
 	private int _index
 	private int _integerPopularity
 	private int _multiplier
@@ -10,13 +10,13 @@ class Player {
 		_integerPopularity = 0
 		_multiplier = factorial(numPlayers)
 	}
-	
+
 	def getIndex() {
 		_index
 	}
 
-	def compareTo(Player other) {
-		if(_integerPopularity > other._integerPopularity) 1 else -1
+	override compareTo(Player other) {
+		if(_integerPopularity > other.integerPopularity) -1 else 1
 	}
 
 	def addPopularity(int numerator, int denominator) {
@@ -29,5 +29,13 @@ class Player {
 
 	def int factorial(int n) {
 		if(n <= 0) 1 else n * factorial(n - 1)
+	}
+
+	def decreaseIntegerPopularity(int decrement) {
+		_integerPopularity -= decrement
+	}
+
+	def getIntegerPopularity() {
+		_integerPopularity
 	}
 }

@@ -1,8 +1,6 @@
 package net.aicomp
 
-import com.google.common.base.Function
 import com.google.common.collect.Lists
-import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Random
@@ -42,11 +40,10 @@ class Game {
 	}
 
 	def populateHeroines(int numHeroines) {
-		_heroines = new ArrayList<Heroine>()
-		(1 .. numHeroines).forEach [
-			val enthusiasm = Math.floor(_random.nextInt * 4) + 3 as int
-			_heroines.add(new Heroine(enthusiasm, _numPlayers))
-		]
+		_heroines = (1 .. numHeroines).map [
+			val enthusiasm = (Math.floor(_random.nextInt * 4) + 3 ) as int
+			new Heroine(enthusiasm, _numPlayers)
+		].toList
 	}
 
 	def isWeekday() {
@@ -54,11 +51,11 @@ class Game {
 	}
 
 	def getNumRequiredCommands() {
-		if(isWeekday()) 5 else 2
+		if(isWeekday) 5 else 2
 	}
 
 	def getNumHeroines() {
-		_heroines.size()
+		_heroines.size
 	}
 
 	def getNumPlayers() {
@@ -80,7 +77,7 @@ class Game {
 				} catch (Exception e) {
 					0
 				}
-				val targetHeroineIndex = Math.max(Math.min(parsedCommand, _heroines.length), 0)
+				val targetHeroineIndex = Math.max(Math.min(parsedCommand, _heroines.size), 0)
 				_heroines.get(targetHeroineIndex).date(playerIndex, isWeekday)
 				_replay.allCommands.get(_turn - 1, playerIndex).add(targetHeroineIndex)
 			]
@@ -112,7 +109,7 @@ class Game {
 			_heroines.map [ heroine |
 				val enemyIndices = (0 ..< _numPlayers).filter [
 					it != playerIndex
-				]
+				].toList
 				val enemyLove = enemyIndices.map [
 					heroine.revealedLove.get(it)
 				]
@@ -151,39 +148,42 @@ class Game {
 	}
 
 	def getTerminationText(int playerIndex) {
-		return null
+		''
 	}
 
 	def getRanking() {
 		val playersWithWinningPopularity = getPlayersWithTotalPopularity(true, true)
 		val playersWithLosingPopularity = getPlayersWithTotalPopularity(false, true)
 
-		(0 .. getNumPlayers() - 1).forEach [ 
-			playersWithWinningPopularity.get(it).integerPopularity -=
-				playersWithLosingPopularity.get(it).integerPopularity
+		(0 .. getNumPlayers() - 1).forEach [
+			playersWithWinningPopularity.get(it).decreaseIntegerPopularity(
+				playersWithLosingPopularity.get(it).integerPopularity)
 		]
 
-		playersWithWinningPopularity.sort()
+		Collections.sort(playersWithWinningPopularity)
 		return playersWithWinningPopularity
 	}
 
 	def getPlayersWithTotalPopularity(boolean winning, boolean real) {
-		val players = (0 .. getNumPlayers() - 1).map [ playerIndex |
-			new Player(playerIndex, getNumPlayers())
-		]
+		val players = (0 .. numPlayers - 1).map [
+			new Player(it, numPlayers)
+		].toList()
 		_heroines.forEach [ heroine |
-			val func = if(winning) [Utility.max(it)] else [Utility.max(it)]
-			val targetPlayers = heroine.filterPlayersByLove(players, func, real)
-			targetPlayers.forEach [ targetPlayer |
-				targetPlayer.addPopularity(heroine.enthusiasm, targetPlayers.size())
+			val func = if (winning)
+					[List<Integer> array|Collections.max(array)]
+				else
+					[List<Integer> array|Collections.min(array)]
+			val targetPlayers = heroine.filterPlayersByLove(players, func, real);
+			targetPlayers.forEach [
+				it.addPopularity(heroine.enthusiasm, targetPlayers.size)
 			]
 		]
 		players
 	}
 
 	def getWinner() {
-		val ranking = getRanking()
-		if (ranking.get(0).getPopularity() == ranking.get(1).getPopularity()) {
+		val ranking = ranking
+		if (ranking.get(0).popularity == ranking.get(1).popularity) {
 			''
 		} else {
 			ranking.get(0).index
@@ -200,77 +200,5 @@ class Replay {
 
 	def getAllCommands() {
 		_allCommands
-	}
-}
-
-class Heroine {
-	double _enthusiasm
-	int _numPlayers
-	List<Integer> _revealedLove
-	List<Integer> _realLove
-	boolean _dated
-
-	new(double enthusiasm, int numPlayers) {
-		_enthusiasm = enthusiasm
-		_numPlayers = numPlayers
-		_revealedLove = Lists.newArrayList()
-		_realLove = Lists.newArrayList()
-		(1 .. numPlayers).forEach [ _ |
-			_revealedLove.add(0)
-			_realLove.add(0)
-		]
-		_dated = false
-	}
-
-	def date(int playerIndex, boolean isWeekday) {
-		if (isWeekday) {
-			_realLove.increment(playerIndex, 1)
-			_revealedLove.increment(playerIndex, 1)
-		} else {
-			_realLove.increment(playerIndex, 2)
-		}
-		_dated = true
-	}
-
-	def filterPlayersByLove(Iterable<Player> players, Function<List<Integer>, Integer> func, boolean real) {
-		val allLove = if(real) _realLove else _revealedLove
-		val targetLove = func.apply(allLove)
-		val targetPlayers = new ArrayList<Player>()
-		for (player : players) {
-			if (allLove.get(player.index) == targetLove) {
-				targetPlayers.add(player)
-			}
-		}
-		targetPlayers
-	}
-
-	def refresh() {
-		_dated = false
-	}
-
-	def getRevealedLove() {
-		_revealedLove
-	}
-
-	def getRealLove() {
-		_realLove
-	}
-
-	def getDatedBit() {
-		if(_dated) 1 else 0
-	}
-
-	def getEnthusiasm() {
-		return _enthusiasm
-	}
-}
-
-class Utility {
-	static def increment(List<Integer> integers, int i, int j) {
-		integers.set(i, integers.get(i) + j)
-	}
-
-	static def <T> get(List<List<T>> arrays, int firstIndex, int secondIndex) {
-		arrays.get(firstIndex).get(secondIndex)
 	}
 }

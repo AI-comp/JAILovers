@@ -19,7 +19,8 @@ class Main {
 	static val EXTERNAL_AI_PROGRAM = "a"
 	static val WORK_DIR_AI_PROGRAM = "w"
 	static val NOT_SHOWING_LOG = "n"
-	static val DEFAULT_COMMAND = "java defaultai/SampleAI"
+	static val DEFAULT_COMMAND = "java SampleAI"
+	static val DEFAULT_WORK_DIR = "./defaultai"
 
 	static def buildOptions() {
 		OptionBuilder.hasArgs()
@@ -70,13 +71,14 @@ class Main {
 		}
 		val indices = (0 .. 3)
 		val cmds = (externalCmds + indices.drop(externalCmds.length).map[Main.DEFAULT_COMMAND])
-		val workingDirsItr = (workingDirs + indices.map[null]).iterator
+		val workingDirsItr = (workingDirs + indices.map[Main.DEFAULT_WORK_DIR]).iterator
 		val indicesItr = indices.iterator
 		val ais = cmds.map [
 			val com = new ExternalComputerPlayer(it.split(" "), workingDirsItr.next)
+			com.addErrorLogStream(System.err)
 			val index = indicesItr.next
-			new AIInitializer(index, com).limittingSumTime(0, 5000) ->
-				new AIManipulator(index, com).limittingSumTime(0, 1000)
+			new AIInitializer(index, com).limittingSumTime(1, 5000) ->
+				new AIManipulator(index, com).limittingSumTime(1, 1000)
 		].toList
 
 		playGame(ais)
@@ -128,9 +130,12 @@ class AIInitializer extends GameManipulator {
 	override protected runProcessing() {
 		var line = ""
 		do {
-			line = _com.readLine.trim
-			_lines.add(line)
-		} while (line.toLowerCase != "ready")
+			line = _com.readLine
+			if (line != null) {
+				line = line.trim
+				_lines.add(line)
+			}
+		} while (line != null && line.toLowerCase != "ready")
 	}
 
 	override protected runPostProcessing() {

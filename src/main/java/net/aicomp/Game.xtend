@@ -77,7 +77,7 @@ class Game {
 			(0 ..< _numPlayers).map [
 				Lists.newArrayList().toList
 			].toList)
-			
+
 		(0 ..< _numPlayers).forEach [ playerIndex |
 			(0 ..< numRequiredCommands).forEach [
 				var targetHeroineIndex = try {
@@ -202,6 +202,10 @@ class Game {
 
 	def getReplay() {
 		_replay
+	}
+
+	def getTurn() {
+		return _turn
 	}
 }
 

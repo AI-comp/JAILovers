@@ -14,11 +14,10 @@ import org.apache.commons.cli.ParseException
 
 class Main {
 	static val HELP = "h"
-	static val RESULT_MODE = "r"
+	static val LOG_LEVEL = "l"
 	static val SILENT = "s"
 	static val EXTERNAL_AI_PROGRAM = "a"
 	static val WORK_DIR_AI_PROGRAM = "w"
-	static val NOT_SHOWING_LOG = "n"
 	static val DEFAULT_COMMAND = "java SampleAI"
 	static val DEFAULT_WORK_DIR = "./defaultai"
 
@@ -31,10 +30,9 @@ class Main {
 		OptionBuilder.withDescription("Set working directories for external programs.")
 		val workDirOption = OptionBuilder.create(WORK_DIR_AI_PROGRAM)
 
-		val options = new Options().addOption(HELP, false, "Print this help.").addOption(RESULT_MODE, false,
-			"Enable result mode which show only a screen of a result.").addOption(NOT_SHOWING_LOG, false,
-			"Disable showing logs in the screen.").addOption(SILENT, false,
-			"Disable writing log files in the log directory.").addOption(externalAIOption).addOption(workDirOption)
+		val options = new Options().addOption(HELP, false, "Print this help.").addOption(LOG_LEVEL, true,
+			"Specify the log level. 0: Show only result 1: Show game status 2: Show detailed log (defaults to 2)").
+			addOption(SILENT, false, "Disable writing log files.").addOption(externalAIOption).addOption(workDirOption)
 		options
 	}
 
@@ -69,6 +67,17 @@ class Main {
 		if (externalCmds.length != workingDirs.length) {
 			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
 		}
+
+		var tmpLogLevel = 2
+		if (cl.hasOption(LOG_LEVEL)) {
+			try {
+				tmpLogLevel = Integer.parseInt(cl.getOptionValue(LOG_LEVEL, "2"))
+			} catch (Exception e) {
+			}
+		}
+		val logLevel = tmpLogLevel
+		val silent = cl.hasOption(SILENT)
+
 		val indices = (0 .. 3)
 		val cmds = (externalCmds + indices.drop(externalCmds.length).map[Main.DEFAULT_COMMAND])
 		val workingDirsItr = (workingDirs + indices.map[Main.DEFAULT_WORK_DIR]).iterator
@@ -77,31 +86,36 @@ class Main {
 			val com = new ExternalComputerPlayer(it.split(" "), workingDirsItr.next)
 			com.addErrorLogStream(System.err)
 			val index = indicesItr.next
-			new AIInitializer(index, com).limittingSumTime(1, 5000) ->
-				new AIManipulator(index, com).limittingSumTime(1, 1000)
+			new AIInitializer(com, index, logLevel, silent).limittingSumTime(1, 5000) ->
+				new AIManipulator(com, index, logLevel, silent).limittingSumTime(1, 1000)
 		].toList
 
-		playGame(ais)
+		playGame(ais, logLevel, silent)
 	}
 
-	static def playGame(List<Pair<Manipulator<Game, String[]>, Manipulator<Game, String[]>>> ais) {
+	static def playGame(List<Pair<Manipulator<Game, String[]>, Manipulator<Game, String[]>>> ais, int logLevel,
+		boolean silent) {
 		val game = new Game()
 		game.initialize()
 
 		ais.forEach[it.key.run(game)]
 
 		while (!game.isFinished()) {
-			System.out.println("Starting a new turn")
+			Utility.outputLog("Starting a new turn", Utility.LOG_LEVEL_DETAILS, logLevel)
+
 			val commands = Lists.newArrayList
 			ais.forEach [
 				commands.add(it.value.run(game).toList)
 			]
+			Utility.outputLog("Turn " + game.turn, Utility.LOG_LEVEL_STATUS, logLevel, true)
 			game.processTurn(commands)
-			System.out.println("Turn finished. Game status:")
-			System.out.println(game.status)
+
+			Utility.outputLog("Turn finished. Game status:", Utility.LOG_LEVEL_DETAILS, logLevel)
+			Utility.outputLog(game.status, Utility.LOG_LEVEL_STATUS, logLevel)
+			Utility.outputLog("", Utility.LOG_LEVEL_STATUS, logLevel)
 		}
 
-		System.out.println("Winner: " + game.winner)
+		Utility.outputLog("Winner: " + game.winner, Utility.LOG_LEVEL_RESULT, logLevel)
 	}
 
 	static def String[] getOptionsValuesWithoutNull(CommandLine cl, String option) {
@@ -115,15 +129,23 @@ class Main {
 // Generics parameters <Argument, String[]> indicate runPreProcessing receives Argument object
 // and runProcessing and runPostProcessing returns String[] object
 abstract class GameManipulator extends Manipulator<Game, String[]> {
+	protected val int _index
+	protected val int _logLevel
+	protected val boolean _silent
+
+	new(int index, int logLevel, boolean silent) {
+		_index = index
+		_logLevel = logLevel
+		_silent = silent
+	}
 }
 
 class AIInitializer extends GameManipulator {
-	val int _index
 	val ExternalComputerPlayer _com
 	var List<String> _lines
 
-	new(int index, ExternalComputerPlayer com) {
-		_index = index
+	new(ExternalComputerPlayer com, int index, int logLevel, boolean silent) {
+		super(index, logLevel, silent)
 		_com = com
 	}
 
@@ -144,31 +166,30 @@ class AIInitializer extends GameManipulator {
 
 	override protected runPostProcessing() {
 		_lines.forEach [
-			System.out.println("AI" + _index + ">>STDOUT:" + it)
+			Utility.outputLog("AI" + _index + ">>STDOUT:" + it, Utility.LOG_LEVEL_DETAILS, _logLevel)
 		]
 		_lines
 	}
 }
 
 class AIManipulator extends GameManipulator {
-	val int _index
 	val ExternalComputerPlayer _com
 	var String _line
 
-	new(int index, ExternalComputerPlayer com) {
-		_index = index
+	new(ExternalComputerPlayer com, int index, int logLevel, boolean silent) {
+		super(index, logLevel, silent)
 		_com = com
 	}
 
 	override protected runPreProcessing(Game game) {
-		System.out.println("AI" + _index + ">>Writing to stdin, waiting for stdout")
+		Utility.outputLog("AI" + _index + ">>Writing to stdin, waiting for stdout", Utility.LOG_LEVEL_DETAILS, _logLevel)
 		var input = ""
 		if (game.isInitialState()) {
 			input += game.getInitialInformation()
 		}
 		input += game.getTurnInformation(_index)
 
-		System.out.print(input)
+		Utility.outputLog(input, Utility.LOG_LEVEL_DETAILS, _logLevel)
 		_com.writeLine(input)
 		_line = ""
 	}
@@ -178,7 +199,7 @@ class AIManipulator extends GameManipulator {
 	}
 
 	override protected runPostProcessing() {
-		System.out.println("AI" + _index + ">>STDOUT:" + _line)
+		Utility.outputLog("AI" + _index + ">>STDOUT:" + _line, Utility.LOG_LEVEL_DETAILS, _logLevel)
 		if (!Strings.isNullOrEmpty(_line)) {
 			_line.trim().split(" ")
 		} else {

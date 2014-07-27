@@ -93,7 +93,6 @@ class Main {
 			game.processTurn(ais.map[it.value.run(game).toList].toList)
 			System.out.println("Turn finished. Game status:")
 			System.out.println(game.status)
-			System.out.println()
 		}
 
 		System.out.println("Winner: " + game.winner)

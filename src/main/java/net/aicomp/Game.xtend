@@ -40,7 +40,7 @@ class Game {
 	}
 
 	protected def nextInt(int inclusiveMin, int inclusiveMax) {
-		Math.floor(_random.nextInt * (inclusiveMax - inclusiveMin + 1)) as int + inclusiveMin
+		Math.floor(_random.nextDouble * (inclusiveMax - inclusiveMin + 1)) as int + inclusiveMin
 	}
 
 	def populateHeroines(int numHeroines) {
@@ -133,11 +133,10 @@ class Game {
 	}
 
 	def getStatus() {
-		val lines = #[
-			'Enthusiasm:',
-			_heroines.map[it.enthusiasm].join(' '),
-			'Real Love:'
-		]
+		val lines = Lists.newArrayList()
+		lines.add('Enthusiasm:')
+		lines.add(_heroines.map[it.enthusiasm].join(' '))
+		lines.add('Real Love:')
 		lines.addAll(_heroines.map[it.realLove.join(' ')])
 
 		if (isWeekday) {

@@ -94,7 +94,6 @@ class Main {
 			game.processTurn(commands)
 			System.out.println("Turn finished. Game status:")
 			System.out.println(game.status)
-			System.out.println()
 		}
 
 		System.out.println("Winner: " + game.winner)

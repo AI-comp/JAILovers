@@ -133,10 +133,11 @@ class Game {
 	}
 
 	def getStatus() {
-		val lines = Lists.newArrayList()
-		lines.add('Enthusiasm:')
-		lines.add(_heroines.map[it.enthusiasm].join(' '))
-		lines.add('Real Love:')
+		val lines = Lists.newArrayList(
+			'Enthusiasm:',
+			_heroines.map[it.enthusiasm].join(' '),
+			'Real Love:'
+		)
 		lines.addAll(_heroines.map[it.realLove.join(' ')])
 
 		if (isWeekday) {

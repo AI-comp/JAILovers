@@ -1,18 +1,19 @@
 package net.aicomp
 
-import java.util.List
-import java.util.ArrayList
 import com.google.common.base.Function
 import com.google.common.collect.Lists
+import java.util.ArrayList
+import java.util.List
 
 import static extension net.aicomp.Utility.*
 
 class Heroine {
-	int _enthusiasm
-	int _numPlayers
-	List<Integer> _revealedLove
-	List<Integer> _realLove
-	boolean _dated
+	val int _enthusiasm
+	val int _numPlayers
+	val List<Integer> _revealedLove
+	val List<Integer> _realLove
+
+	var boolean _dated
 
 	new(int enthusiasm, int numPlayers) {
 		_enthusiasm = enthusiasm
@@ -59,7 +60,7 @@ class Heroine {
 	def getRealLove() {
 		_realLove
 	}
-	
+
 	def getDatedBit() {
 		if(_dated) 1 else 0
 	}

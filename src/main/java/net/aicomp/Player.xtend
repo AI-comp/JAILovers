@@ -1,9 +1,10 @@
 package net.aicomp
 
 class Player implements Comparable<Player> {
-	private int _index
-	private int _integerPopularity
-	private int _multiplier
+	val int _index
+	val int _multiplier
+
+	var int _integerPopularity
 
 	new(int index, int numPlayers) {
 		_index = index

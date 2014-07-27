@@ -1,5 +1,7 @@
 package net.aicomp
 
+import com.google.common.base.Strings
+import java.util.ArrayList
 import java.util.List
 import net.exkazuu.gameaiarena.manipulator.Manipulator
 import net.exkazuu.gameaiarena.player.ExternalComputerPlayer
@@ -9,7 +11,6 @@ import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.OptionBuilder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
-import java.util.ArrayList
 
 class Main {
 	static val HELP = "h"
@@ -137,12 +138,15 @@ class AIManipulator extends GameManipulator {
 
 		System.out.print(input)
 		_com.writeLine(input)
+		_commands = #[]
 	}
 
 	override protected runProcessing() {
 		val line = _com.readLine
 		System.out.println("AI" + _index + ">>STDOUT:" + line)
-		_commands = line.trim().split(" ")
+		if (!Strings.isNullOrEmpty(line)) {
+			_commands = line.trim().split(" ")
+		}
 	}
 
 	override protected runPostProcessing() {

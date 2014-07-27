@@ -41,7 +41,7 @@ class Game {
 
 	def populateHeroines(int numHeroines) {
 		_heroines = (1 .. numHeroines).map [
-			val enthusiasm = (Math.floor(_random.nextInt * 4) + 3 ) as int
+			val enthusiasm = (Math.floor(_random.nextDouble * 4) + 3 ) as int
 			new Heroine(enthusiasm, _numPlayers)
 		].toList
 	}

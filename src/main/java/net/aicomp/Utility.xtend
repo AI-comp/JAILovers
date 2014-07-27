@@ -15,14 +15,9 @@ class Utility {
 		arrays.get(firstIndex).get(secondIndex)
 	}
 
-	static def outputLog(String message, int targetLogLevel, int logLevel, boolean isSingleTarget) {
-		val condition = if(isSingleTarget) logLevel == targetLogLevel else logLevel >= targetLogLevel
-		if (condition) {
+	static def outputLog(String message, int targetLogLevel, int logLevel) {
+		if (logLevel >= targetLogLevel) {
 			System.out.println(message.trim)
 		}
-	}
-
-	static def outputLog(String message, int targetLogLevel, int logLevel) {
-		outputLog(message, targetLogLevel, logLevel, false)
 	}
 }

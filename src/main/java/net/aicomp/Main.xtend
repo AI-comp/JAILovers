@@ -84,7 +84,6 @@ class Main {
 		val indicesItr = indices.iterator
 		val ais = cmds.map [
 			val com = new ExternalComputerPlayer(it.split(" "), workingDirsItr.next)
-			com.addErrorLogStream(System.err)
 			val index = indicesItr.next
 			new AIInitializer(com, index, logLevel, silent).limittingSumTime(1, 5000) ->
 				new AIManipulator(com, index, logLevel, silent).limittingSumTime(1, 1000)
@@ -101,20 +100,25 @@ class Main {
 		ais.forEach[it.key.run(game)]
 
 		while (!game.isFinished()) {
-			Utility.outputLog("Starting a new turn", Utility.LOG_LEVEL_DETAILS, logLevel)
+			if (game.isInitialState()) {
+				Utility.outputLog("", Utility.LOG_LEVEL_DETAILS, logLevel)
+			} else {
+				Utility.outputLog("", Utility.LOG_LEVEL_STATUS, logLevel)
+			}
+			Utility.outputLog("Turn " + game.turn, Utility.LOG_LEVEL_STATUS, logLevel)
 
 			val commands = Lists.newArrayList
 			ais.forEach [
 				commands.add(it.value.run(game).toList)
 			]
-			Utility.outputLog("Turn " + game.turn, Utility.LOG_LEVEL_STATUS, logLevel, true)
 			game.processTurn(commands)
 
 			Utility.outputLog("Turn finished. Game status:", Utility.LOG_LEVEL_DETAILS, logLevel)
 			Utility.outputLog(game.status, Utility.LOG_LEVEL_STATUS, logLevel)
-			Utility.outputLog("", Utility.LOG_LEVEL_STATUS, logLevel)
 		}
 
+		Utility.outputLog("", Utility.LOG_LEVEL_STATUS, logLevel)
+		Utility.outputLog("Game Finished", Utility.LOG_LEVEL_STATUS, logLevel)
 		Utility.outputLog("Winner: " + game.winner, Utility.LOG_LEVEL_RESULT, logLevel)
 	}
 
@@ -166,7 +170,7 @@ class AIInitializer extends GameManipulator {
 
 	override protected runPostProcessing() {
 		_lines.forEach [
-			Utility.outputLog("AI" + _index + ">>STDOUT:" + it, Utility.LOG_LEVEL_DETAILS, _logLevel)
+			Utility.outputLog("AI" + _index + ">>STDOUT: " + it, Utility.LOG_LEVEL_DETAILS, _logLevel)
 		]
 		_lines
 	}

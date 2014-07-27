@@ -92,7 +92,11 @@ class Main {
 
 		while (!game.isFinished()) {
 			System.out.println("Starting a new turn")
-			game.processTurn(ais.map[it.value.run(game).toList].toList)
+			val commands = Lists.newArrayList
+			ais.forEach [
+				commands.add(it.value.run(game).toList)
+			]
+			game.processTurn(commands)
 			System.out.println("Turn finished. Game status:")
 			System.out.println(game.status)
 		}

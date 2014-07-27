@@ -19,7 +19,7 @@ class Main {
 	static val EXTERNAL_AI_PROGRAM = "a"
 	static val WORK_DIR_AI_PROGRAM = "w"
 	static val NOT_SHOWING_LOG = "n"
-	static val DEFAULT_COMMAND = "python SampleAI.py"
+	static val DEFAULT_COMMAND = "java defaultai/SampleAI"
 
 	static def buildOptions() {
 		OptionBuilder.hasArgs()

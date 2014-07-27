@@ -1,7 +1,4 @@
-JAILovers
-[![Build Status](https://travis-ci.org/AI-comp/JAILovers.png?branch=master)]
-(https://travis-ci.org/AI-comp/JAILovers)
-
+JAILovers [![Build Status](https://travis-ci.org/AI-comp/JAILovers.png?branch=master)](https://travis-ci.org/AI-comp/JAILovers)
 =========
 
 # Requirements

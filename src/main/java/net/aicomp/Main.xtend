@@ -10,6 +10,7 @@ import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.OptionBuilder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
+import java.io.IOException
 
 class Main {
 	static val HELP = "h"
@@ -70,13 +71,18 @@ class Main {
 		val indices = (0 .. 3)
 		val cmds = (externalCmds + indices.drop(externalCmds.length).map[Main.DEFAULT_COMMAND])
 		val workingDirsItr = (workingDirs + indices.map[Main.DEFAULT_WORK_DIR]).iterator
-		val indicesItr = indices.iterator
-		val ais = cmds.map [
-			val com = new ExternalComputerPlayerWithErrorLog(it.split(" "), workingDirsItr.next)
-			val index = indicesItr.next
-			new AIInitializer(com, index).limittingSumTime(1, 5000) ->
-				new AIManipulator(com, index).limittingSumTime(1, 1000)
-		].toList
+		val ais = Lists.newArrayList
+		cmds.forEach [ cmd, index |
+			try {
+				val com = new ExternalComputerPlayerWithErrorLog(cmd.split(" "), workingDirsItr.next)
+				ais.add(
+					new AIInitializer(com, index).limittingSumTime(1, 5000) ->
+						new AIManipulator(com, index).limittingSumTime(1, 1000)
+				)
+			} catch (IOException e) {
+				System.exit(-1)
+			}
+		]
 
 		var tmpLogLevel = 2
 		if (cl.hasOption(LOG_LEVEL)) {

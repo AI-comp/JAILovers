@@ -120,7 +120,7 @@ class Game {
 				val enemyLove = enemyIndices.map [
 					heroine.revealedLove.get(it)
 				]
-				(enemyIndices + enemyLove).join(' ')
+				(#[heroine.revealedLove.get(playerIndex)] + enemyLove).join(' ')
 			])
 
 		lines.add(_heroines.map[it.realLove.get(playerIndex)].join(' '))

@@ -91,6 +91,9 @@ class Main {
 				commands.add(ai.run(game).toList)
 			]
 			game.processTurn(commands)
+			System.out.println("Turn finished. Game status:")
+			System.out.println(game.status)
+			System.out.println()
 		}
 
 		System.out.println("Winner: " + game.winner)
@@ -132,7 +135,7 @@ class AIManipulator extends GameManipulator {
 		}
 		input += game.getTurnInformation(_index)
 
-		System.out.println(input)
+		System.out.print(input)
 		_com.writeLine(input)
 	}
 

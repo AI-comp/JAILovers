@@ -1,7 +1,7 @@
 package net.aicomp
 
 import com.google.common.base.Strings
-import java.util.ArrayList
+import com.google.common.collect.Lists
 import java.util.List
 import net.exkazuu.gameaiarena.manipulator.Manipulator
 import net.exkazuu.gameaiarena.player.ExternalComputerPlayer
@@ -68,30 +68,29 @@ class Main {
 		if (externalCmds.length != workingDirs.length) {
 			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
 		}
-		val workingDirsItr = (workingDirs + (0 .. 3).map[null]).toList().iterator()
-		val cmds = (externalCmds + (0 .. 3).drop(externalCmds.length).map[Main.DEFAULT_COMMAND])
-		val ais = new ArrayList<AIManipulator>()
-		cmds.forEach [ cmd, i |
-			ais.add(new AIManipulator(i, cmd.split(" "), workingDirsItr.next))
-		]
+		val indices = (0 .. 3)
+		val cmds = (externalCmds + indices.drop(externalCmds.length).map[Main.DEFAULT_COMMAND])
+		val workingDirsItr = (workingDirs + indices.map[null]).iterator
+		val indicesItr = indices.iterator
+		val ais = cmds.map [
+			val com = new ExternalComputerPlayer(it.split(" "), workingDirsItr.next)
+			val index = indicesItr.next
+			new AIInitializer(index, com).limittingSumTime(5000, 0) ->
+				new AIManipulator(index, com).limittingSumTime(1000, 0)
+		].toList
+
 		playGame(ais)
 	}
 
-	static def playGame(List<AIManipulator> ais) {
+	static def playGame(List<Pair<Manipulator<Game, String[]>, Manipulator<Game, String[]>>> ais) {
 		val game = new Game()
 		game.initialize()
 
-		ais.forEach [ ai |
-			ai.getReady()
-		]
+		ais.forEach[it.key.run(game)]
 
 		while (!game.isFinished()) {
 			System.out.println("Starting a new turn")
-			val commands = new ArrayList<List<String>>()
-			ais.forEach [ ai, index |
-				commands.add(ai.run(game).toList)
-			]
-			game.processTurn(commands)
+			game.processTurn(ais.map[it.value.run(game).toList].toList)
 			System.out.println("Turn finished. Game status:")
 			System.out.println(game.status)
 			System.out.println()
@@ -113,19 +112,44 @@ class Main {
 abstract class GameManipulator extends Manipulator<Game, String[]> {
 }
 
-class AIManipulator extends GameManipulator {
-	private ExternalComputerPlayer _com
-	private String[] _commands
-	private int _index
+class AIInitializer extends GameManipulator {
+	val int _index
+	val ExternalComputerPlayer _com
+	var List<String> _lines
 
-	new(int index, String[] commandWithArguments) {
+	new(int index, ExternalComputerPlayer com) {
 		_index = index
-		_com = new ExternalComputerPlayer(commandWithArguments)
+		_com = com
 	}
 
-	new(int index, String[] commandWithArguments, String workingDir) {
+	override protected runPreProcessing(Game game) {
+		_lines = Lists.newArrayList
+	}
+
+	override protected runProcessing() {
+		var line = ""
+		do {
+			line = _com.readLine.trim
+			_lines.add(line)
+		} while (line.toLowerCase != "ready")
+	}
+
+	override protected runPostProcessing() {
+		_lines.forEach [
+			System.out.println("AI" + _index + ">>STDOUT:" + it)
+		]
+		_lines
+	}
+}
+
+class AIManipulator extends GameManipulator {
+	val int _index
+	val ExternalComputerPlayer _com
+	var String _line
+
+	new(int index, ExternalComputerPlayer com) {
 		_index = index
-		_com = new ExternalComputerPlayer(commandWithArguments, workingDir)
+		_com = com
 	}
 
 	override protected runPreProcessing(Game game) {
@@ -138,26 +162,19 @@ class AIManipulator extends GameManipulator {
 
 		System.out.print(input)
 		_com.writeLine(input)
-		_commands = #[]
+		_line = ""
 	}
 
 	override protected runProcessing() {
-		val line = _com.readLine
-		System.out.println("AI" + _index + ">>STDOUT:" + line)
-		if (!Strings.isNullOrEmpty(line)) {
-			_commands = line.trim().split(" ")
-		}
+		_line = _com.readLine
 	}
 
 	override protected runPostProcessing() {
-		_commands
-	}
-
-	def getReady() {
-		var line = ""
-		do {
-			line = _com.readLine
-			System.out.println("AI" + _index + ">>STDOUT:" + line)
-		} while (line.toLowerCase != "ready")
+		System.out.println("AI" + _index + ">>STDOUT:" + _line)
+		if (!Strings.isNullOrEmpty(_line)) {
+			_line.trim().split(" ")
+		} else {
+			#[]
+		}
 	}
 }

@@ -8,14 +8,14 @@ import java.util.Random
 import static extension net.aicomp.Utility.*
 
 class Game {
-	List<Heroine> _heroines
-	int _initialTurn
-	int _lastTurn
-	int _turn
-	Random _random
-	Replay _replay
+	val int _initialTurn
+	val int _lastTurn
+	val Random _random
+	val Replay _replay
 
-	int _numPlayers
+	var List<Heroine> _heroines
+	var int _turn
+	var int _numPlayers
 
 	new() {
 		_heroines = Lists.newArrayList()
@@ -39,9 +39,13 @@ class Game {
 		populateHeroines(numHeroines)
 	}
 
+	protected def nextInt(int inclusiveMin, int inclusiveMax) {
+		Math.floor(_random.nextInt * (inclusiveMax - inclusiveMin + 1)) as int + inclusiveMin
+	}
+
 	def populateHeroines(int numHeroines) {
 		_heroines = (1 .. numHeroines).map [
-			val enthusiasm = (Math.floor(_random.nextInt * 4) + 3 ) as int
+			val enthusiasm = nextInt(3, 6)
 			new Heroine(enthusiasm, _numPlayers)
 		].toList
 	}
@@ -196,7 +200,11 @@ class Game {
 }
 
 class Replay {
-	private List<List<List<Integer>>> _allCommands
+	val List<List<List<Integer>>> _allCommands
+
+	new() {
+		_allCommands = Lists.newArrayList()
+	}
 
 	def getAllCommands() {
 		_allCommands

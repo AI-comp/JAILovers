@@ -32,7 +32,7 @@ class Main {
 
 		val options = new Options().addOption(HELP, false, "Print this help.").addOption(LOG_LEVEL, true,
 			"Specify the log level. 0: Show only result 1: Show game status 2: Show detailed log (defaults to 2)").
-			addOption(SILENT, false, "Disable writing log files.").addOption(externalAIOption).addOption(workDirOption)
+			addOption(SILENT, false, "Disable writing a log file.").addOption(externalAIOption).addOption(workDirOption)
 		options
 	}
 

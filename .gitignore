@@ -13,3 +13,6 @@ release.properties
 # Xtend
 src/test/xtend-gen
 src/main/xtend-gen
+
+# Log
+log.txt

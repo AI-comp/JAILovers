@@ -2,6 +2,7 @@ package net.aicomp
 
 import com.google.common.base.Strings
 import com.google.common.collect.Lists
+import java.io.IOException
 import java.util.List
 import net.exkazuu.gameaiarena.manipulator.Manipulator
 import org.apache.commons.cli.BasicParser
@@ -10,7 +11,6 @@ import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.OptionBuilder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
-import java.io.IOException
 
 class Main {
 	static val HELP = "h"
@@ -49,7 +49,7 @@ class Main {
 			if (cl.hasOption(HELP)) {
 				printHelp(options)
 			} else {
-				start(cl)
+				start(new Game(), cl)
 			}
 		} catch (ParseException e) {
 			System.err.println("Error: " + e.getMessage())
@@ -58,7 +58,7 @@ class Main {
 		}
 	}
 
-	static def start(CommandLine cl) {
+	static def start(Game game, CommandLine cl) {
 		val externalCmds = getOptionsValuesWithoutNull(cl, EXTERNAL_AI_PROGRAM)
 		var workingDirs = getOptionsValuesWithoutNull(cl, WORK_DIR_AI_PROGRAM)
 		if (workingDirs.isEmpty) {
@@ -95,15 +95,14 @@ class Main {
 		val silent = cl.hasOption(SILENT)
 		Logger.instance.initialize(logLevel, silent)
 
-		val game = playGame(ais)
+		playGame(game, ais)
 
 		Logger.instance.finalize()
-		
+
 		game
 	}
 
-	static def playGame(List<Pair<Manipulator<Game, String[]>, Manipulator<Game, String[]>>> ais) {
-		val game = new Game()
+	static def playGame(Game game, List<Pair<Manipulator<Game, String[]>, Manipulator<Game, String[]>>> ais) {
 		game.initialize()
 
 		ais.forEach[it.key.run(game)]
@@ -129,7 +128,7 @@ class Main {
 		Logger.instance.outputLog("", Logger.LOG_LEVEL_STATUS)
 		Logger.instance.outputLog("Game Finished", Logger.LOG_LEVEL_STATUS)
 		Logger.instance.outputLog("Winner: " + game.winner, Logger.LOG_LEVEL_RESULT)
-		
+
 		game
 	}
 

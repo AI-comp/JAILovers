@@ -50,7 +50,7 @@ class Game {
 	}
 
 	private def nextInt(int inclusiveMin, int inclusiveMax) {
-		_random.nextInt % (inclusiveMax - inclusiveMin + 1) + inclusiveMin
+		(_random.nextInt.bitwiseAnd(0x7FFFFFFF)) % (inclusiveMax - inclusiveMin + 1) + inclusiveMin
 	}
 
 	def populateHeroines(int numHeroines) {
@@ -206,7 +206,7 @@ class Game {
 		if (ranking.get(0).popularity == ranking.get(1).popularity) {
 			''
 		} else {
-			ranking.get(0).index
+			ranking.get(0).index.toString
 		}
 	}
 

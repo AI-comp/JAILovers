@@ -1,7 +1,7 @@
 /*
   MersenneTwister from 数学的逆説
   http://homepage2.nifty.com/mathpara/
-*/
+ */
 
 package net.aicomp.util;
 
@@ -45,6 +45,12 @@ public class MersenneTwister {
 		nextInt = temper(nextInt);
 
 		return nextInt;
+	}
+
+	public double random() {
+		int i = nextInt();
+		long l = i >= 0 ? i : (long) (i & 0x7FFFFFFF) + (1L << 31);
+		return l * (1.0 / 4294967296.0);
 	}
 
 	/**

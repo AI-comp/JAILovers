@@ -1,5 +1,6 @@
 package net.aicomp;
 
+import net.aicomp.util.MersenneTwister
 import org.apache.commons.cli.BasicParser
 import org.junit.Test
 
@@ -28,20 +29,28 @@ class GameTest {
 		]
 	}
 
-	@Test def void conductGame_1_2_3_4_1000() {
+	@Test def void conductGame() {
+		val rand = new MersenneTwister(100)
+		System.out.println(rand.random)
+		System.out.println(rand.random)
+		System.out.println(rand.random)
+		System.out.println(rand.random)
+	}
+
+	@Test def void conductGame_0_1_2_3_4() {
 		val cl = new BasicParser().parse(
 			Main.buildOptions,
-			buildArguments(1, 2, 3, 4)
+			buildArguments(0, 1, 2, 3)
 		)
-		val game = Main.start(new Game(1000), cl)
+		val game = Main.start(new Game(4), cl)
 		assertThat(game.ranking.get(0).index, is(0))
-		assertThat(game.ranking.get(1).index, is(3))
-		assertThat(game.ranking.get(2).index, is(1))
-		assertThat(game.ranking.get(3).index, is(2))
-		assertThat(game.ranking.get(0).popularity, is(8.0))
-		assertThat(game.ranking.get(1).popularity, is(-1.0))
-		assertThat(game.ranking.get(2).popularity, is(-2.5))
-		assertThat(game.ranking.get(3).popularity, is(-4.5))
+		assertThat(game.ranking.get(1).index, is(2))
+		assertThat(game.ranking.get(2).index, is(3))
+		assertThat(game.ranking.get(3).index, is(1))
+		assertThat(game.ranking.get(0).popularity, is(2.0))
+		assertThat(game.ranking.get(1).popularity, is(1.5))
+		assertThat(game.ranking.get(2).popularity, is(0.0))
+		assertThat(game.ranking.get(3).popularity, is(-3.5))
 	}
 
 	@Test def void conductGame_5_6_7_8_9() {
@@ -51,12 +60,12 @@ class GameTest {
 		)
 		val game = Main.start(new Game(9), cl)
 		assertThat(game.ranking.get(0).index, is(3))
-		assertThat(game.ranking.get(1).index, is(1))
-		assertThat(game.ranking.get(2).index, is(2))
-		assertThat(game.ranking.get(3).index, is(0))
-		assertThat(game.ranking.get(0).popularity, is(2.0))
-		assertThat(game.ranking.get(1).popularity, is(2.0))
-		assertThat(game.ranking.get(2).popularity, is(0.0))
-		assertThat(game.ranking.get(3).popularity, is(-4.0))
+		assertThat(game.ranking.get(1).index, is(0))
+		assertThat(game.ranking.get(2).index, is(1))
+		assertThat(game.ranking.get(3).index, is(2))
+		assertThat(game.ranking.get(0).popularity, is(5.0))
+		assertThat(game.ranking.get(1).popularity, is(-1.0))
+		assertThat(game.ranking.get(2).popularity, is(-2.0))
+		assertThat(game.ranking.get(3).popularity, is(-2.0))
 	}
 }

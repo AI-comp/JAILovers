@@ -4,14 +4,14 @@ import com.google.common.collect.Lists
 import java.util.Collections
 import java.util.List
 import java.util.Random
-import net.aicomp.util.MersenneTwisterRandom
+import net.aicomp.util.MersenneTwister
 
 import static extension net.aicomp.Utility.*
 
 class Game {
 	val int _initialTurn
 	val int _lastTurn
-	val Random _random
+	val MersenneTwister _mt
 	val Replay _replay
 
 	var List<Heroine> _heroines
@@ -23,7 +23,7 @@ class Game {
 		_initialTurn = 1
 		_lastTurn = 10
 		_turn = _initialTurn
-		_random = new MersenneTwisterRandom()
+		_mt = new MersenneTwister(new Random().nextInt)
 		_replay = new Replay()
 	}
 
@@ -32,7 +32,7 @@ class Game {
 		_initialTurn = 1
 		_lastTurn = 10
 		_turn = _initialTurn
-		_random = new MersenneTwisterRandom(seed)
+		_mt = new MersenneTwister(seed)
 		_replay = new Replay()
 	}
 
@@ -49,13 +49,9 @@ class Game {
 		populateHeroines(numHeroines)
 	}
 
-	private def nextInt(int inclusiveMin, int inclusiveMax) {
-		(_random.nextInt.bitwiseAnd(0x7FFFFFFF)) % (inclusiveMax - inclusiveMin + 1) + inclusiveMin
-	}
-
 	def populateHeroines(int numHeroines) {
 		_heroines = (1 .. numHeroines).map [
-			val enthusiasm = nextInt(3, 6)
+			val enthusiasm = (_mt.random() * 4) as int + 3
 			new Heroine(enthusiasm, _numPlayers)
 		].toList
 	}

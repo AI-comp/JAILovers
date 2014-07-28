@@ -95,9 +95,11 @@ class Main {
 		val silent = cl.hasOption(SILENT)
 		Logger.instance.initialize(logLevel, silent)
 
-		playGame(ais)
+		val game = playGame(ais)
 
 		Logger.instance.finalize()
+		
+		game
 	}
 
 	static def playGame(List<Pair<Manipulator<Game, String[]>, Manipulator<Game, String[]>>> ais) {
@@ -127,6 +129,8 @@ class Main {
 		Logger.instance.outputLog("", Logger.LOG_LEVEL_STATUS)
 		Logger.instance.outputLog("Game Finished", Logger.LOG_LEVEL_STATUS)
 		Logger.instance.outputLog("Winner: " + game.winner, Logger.LOG_LEVEL_RESULT)
+		
+		game
 	}
 
 	static def String[] getOptionsValuesWithoutNull(CommandLine cl, String option) {

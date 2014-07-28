@@ -1,3 +1,8 @@
+/*
+  MersenneTwister from 数学的逆説
+  http://homepage2.nifty.com/mathpara/
+*/
+
 package net.aicomp.util;
 
 public class MersenneTwister {

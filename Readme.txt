@@ -21,6 +21,10 @@ AIプログラムおよびワーキングディレクトリはそれぞれ4つ�
 
     java -jar AILovers.jar -a "java SampleAI" -w "./Java" -a "python SampleAI.py" -w "./Python2"
 
+その他のオプションについては以下のコマンドで表示されるヘルプをご参照ください。
+
+    java -jar AILovers.jar -h
+	
 -----------------------------
 サンプルプログラム
 -----------------------------

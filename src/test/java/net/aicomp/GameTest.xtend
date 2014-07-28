@@ -29,14 +29,6 @@ class GameTest {
 		]
 	}
 
-	@Test def void conductGame() {
-		val rand = new MersenneTwister(100)
-		System.out.println(rand.random)
-		System.out.println(rand.random)
-		System.out.println(rand.random)
-		System.out.println(rand.random)
-	}
-
 	@Test def void conductGame_0_1_2_3_4() {
 		val cl = new BasicParser().parse(
 			Main.buildOptions,

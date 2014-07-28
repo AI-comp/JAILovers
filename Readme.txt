@@ -13,11 +13,11 @@ AI Lovers スターターパッケージ
 
     java -jar AILovers.jar
 
-自分のAIを対戦させるには、以下のように-aオプションでAIプログラムの実行コマンドを指定します。-wオプションでワーキングディレクトリを指定することもできます。
+自分のAIを対戦させるには、以下のように-aオプションでAIプログラムの実行コマンドを指定します。-wオプションでワーキングディレクトリを指定できます。
 
     java -jar AILovers.jar -a "java SampleAI" -w "./Java"
 
-AIプログラムおよびワーキングディレクトリはそれぞれ4つまで指定することができます。
+AIプログラムおよびワーキングディレクトリはそれぞれ4つまで指定できます。
 
     java -jar AILovers.jar -a "java SampleAI" -w "./Java" -a "python SampleAI.py" -w "./Python2"
 

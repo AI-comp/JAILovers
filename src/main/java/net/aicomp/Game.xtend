@@ -4,6 +4,7 @@ import com.google.common.collect.Lists
 import java.util.Collections
 import java.util.List
 import java.util.Random
+import net.aicomp.util.MersenneTwisterRandom
 
 import static extension net.aicomp.Utility.*
 
@@ -22,7 +23,16 @@ class Game {
 		_initialTurn = 1
 		_lastTurn = 10
 		_turn = _initialTurn
-		_random = new Random()
+		_random = new MersenneTwisterRandom()
+		_replay = new Replay()
+	}
+
+	new(int seed) {
+		_heroines = Lists.newArrayList()
+		_initialTurn = 1
+		_lastTurn = 10
+		_turn = _initialTurn
+		_random = new MersenneTwisterRandom(seed)
 		_replay = new Replay()
 	}
 
@@ -39,8 +49,8 @@ class Game {
 		populateHeroines(numHeroines)
 	}
 
-	protected def nextInt(int inclusiveMin, int inclusiveMax) {
-		Math.floor(_random.nextDouble * (inclusiveMax - inclusiveMin + 1)) as int + inclusiveMin
+	private def nextInt(int inclusiveMin, int inclusiveMax) {
+		_random.nextInt % (inclusiveMax - inclusiveMin + 1) + inclusiveMin
 	}
 
 	def populateHeroines(int numHeroines) {

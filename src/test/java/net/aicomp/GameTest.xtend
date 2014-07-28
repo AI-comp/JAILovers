@@ -1,5 +1,6 @@
 package net.aicomp;
 
+import net.aicomp.util.MersenneTwisterRandom
 import org.apache.commons.cli.BasicParser
 import org.junit.Test
 
@@ -7,21 +8,12 @@ import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 
 class GameTest {
-	@Test def void conductGame2() {
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
-		System.out.println(TestableGame.xorShiftRandom)
+	@Test def void testRandom() {
+		val mt = new MersenneTwisterRandom(13579)
+		System.out.println(mt.nextInt)
+		System.out.println(mt.nextInt)
 	}
-	
+
 	@Test def void conductGame() {
 		assertThat(new Game(), is(not(nullValue)))
 		val parser = new BasicParser()
@@ -47,6 +39,6 @@ class GameTest {
 				"defaultai"
 			]
 		)
-		Main.start(cl)
+		Main.start(new Game(0), cl)
 	}
 }

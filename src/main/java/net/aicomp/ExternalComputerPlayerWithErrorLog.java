@@ -38,6 +38,7 @@ public class ExternalComputerPlayerWithErrorLog {
 		_inputLogStreams = new ArrayList<PrintStream>();
 		_outputLogStreams = new ArrayList<PrintStream>();
 		_errorLogStreams = new ArrayList<PrintStream>();
+		_errorLog = "";
 		try {
 			_process = pb.start();
 			_reader = new BufferedReader(new InputStreamReader(

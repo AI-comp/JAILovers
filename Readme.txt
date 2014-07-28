@@ -10,16 +10,17 @@ AI Lovers スターターパッケージ
 -----------------------------
 
 スターターパッケージのディレクトリでコンソールを開き、以下のコマンドでAI Loversを実行すると、サンプルAIプログラム同士の対戦が行われます。
+対戦のログはコンソールに出力されるほか、スターターパッケージディレクトリ下のlog.txtにも出力されます。
 
     java -jar AILovers.jar
 
 自分のAIを対戦させるには、以下のように-aオプションでAIプログラムの実行コマンドを指定します。-wオプションでワーキングディレクトリを指定できます。
 
-    java -jar AILovers.jar -a "java SampleAI" -w "./Java"
+    java -jar AILovers.jar -a "java SampleAI" -w "./SampleAI/Java"
 
 AIプログラムおよびワーキングディレクトリはそれぞれ4つまで指定できます。
 
-    java -jar AILovers.jar -a "java SampleAI" -w "./Java" -a "python SampleAI.py" -w "./Python2"
+    java -jar AILovers.jar -a "java SampleAI" -w "./SampleAI/Java" -a "python SampleAI.py" -w "./SampleAI/Python2"
 
 その他のオプションについては以下のコマンドで表示されるヘルプをご参照ください。
 

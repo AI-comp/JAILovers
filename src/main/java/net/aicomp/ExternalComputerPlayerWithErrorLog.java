@@ -102,6 +102,7 @@ public class ExternalComputerPlayerWithErrorLog {
 	}
 
 	public void writeLine(String str) {
+		str = str.trim();
 		for (PrintStream stream : _inputLogStreams) {
 			stream.println(str);
 			stream.flush();

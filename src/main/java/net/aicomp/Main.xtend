@@ -65,7 +65,7 @@ class Main {
 			workingDirs = externalCmds.map[null]
 		}
 		if (externalCmds.length != workingDirs.length) {
-			throw new ParseException("The numbers of arguments of -a and -w should be equal.")
+			throw new ParseException("The numbers of arguments of -a and -w must be equal.")
 		}
 
 		val indices = (0 .. 3)

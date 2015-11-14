@@ -1,6 +1,5 @@
 package net.aicomp;
 
-import net.aicomp.util.MersenneTwister
 import org.apache.commons.cli.BasicParser
 import org.junit.Test
 

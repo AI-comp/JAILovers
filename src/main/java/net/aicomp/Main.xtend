@@ -5,6 +5,7 @@ import com.google.common.collect.Lists
 import java.io.IOException
 import java.util.List
 import net.exkazuu.gameaiarena.manipulator.Manipulator
+import net.exkazuu.gameaiarena.player.ExternalComputerPlayer
 import org.apache.commons.cli.BasicParser
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.HelpFormatter
@@ -74,7 +75,7 @@ class Main {
 		val ais = Lists.newArrayList
 		cmds.forEach [ cmd, index |
 			try {
-				val com = new ExternalComputerPlayerWithErrorLog(cmd.split(" "), workingDirsItr.next)
+				val com = new ExternalComputerPlayer(cmd.split(" "), workingDirsItr.next)
 				ais.add(
 					new AIInitializer(com, index).limittingSumTime(1, 5000) ->
 						new AIManipulator(com, index).limittingSumTime(1, 1000)
@@ -151,10 +152,10 @@ abstract class GameManipulator extends Manipulator<Game, String[]> {
 }
 
 class AIInitializer extends GameManipulator {
-	val ExternalComputerPlayerWithErrorLog _com
+	val ExternalComputerPlayer _com
 	var List<String> _lines
 
-	new(ExternalComputerPlayerWithErrorLog com, int index) {
+	new(ExternalComputerPlayer com, int index) {
 		super(index)
 		_com = com
 	}
@@ -186,10 +187,10 @@ class AIInitializer extends GameManipulator {
 }
 
 class AIManipulator extends GameManipulator {
-	val ExternalComputerPlayerWithErrorLog _com
+	val ExternalComputerPlayer _com
 	var String _line
 
-	new(ExternalComputerPlayerWithErrorLog com, int index) {
+	new(ExternalComputerPlayer com, int index) {
 		super(index)
 		_com = com
 	}
